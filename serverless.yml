@@ -12,7 +12,7 @@ provider:
   stackName: ${self:service}-stack
   environment:
     BUCKET: 'route53-backup-data-#{AWS::AccountId}'
-
+    RETENTION_PERIOD: var.retention_period
 functions:
   backup-route53:
     handler: backup_route53.handle
@@ -20,10 +20,12 @@ functions:
     description: Backs up Route53 regularly to a bucket
     timeout: 120
     memorySize: 512
+    environment:
+      RETENTION_PERIOD: ${opt:retention-period, "14"}
     events:
       - schedule:
           name: route53-scheduled-backup-trigger
-          rate: rate(${self:custom.backup_interval} minutes)
+          rate: rate(${opt:backup-interval, "1440"} minutes)
           enabled: true
           input: {}
     iamRoleStatementsName: ${self:service}-backup-lambda-role
@@ -96,8 +98,6 @@ functions:
       include:
         - route53_utils.py
         - restore_route53.py
-custom:
-    backup_interval: ${opt:backup_interval, 1440}
 plugins:
   - serverless-pseudo-parameters
   - serverless-iam-roles-per-function
