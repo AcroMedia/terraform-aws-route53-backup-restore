@@ -9,10 +9,10 @@ package:
 provider:
   name: aws
   runtime: python3.11
-  stackName: ${self:service.name}-stack
+  stackName: ${self:service}-stack
   environment:
     BUCKET: 'route53-backup-data-#{AWS::AccountId}'
-
+    RETENTION_PERIOD: var.retention_period
 functions:
   backup-route53:
     handler: backup_route53.handle
@@ -25,10 +25,10 @@ functions:
     events:
       - schedule:
           name: route53-scheduled-backup-trigger
-          rate: rate(${opt:backup-interval, "120"} minutes)
+          rate: rate(${opt:backup-interval, "1440"} minutes)
           enabled: true
           input: {}
-    iamRoleStatementsName: ${self:service.name}-backup-lambda-role
+    iamRoleStatementsName: ${self:service}-backup-lambda-role
     iamRoleStatementsInherit: false
     iamRoleStatements:
       - Effect: "Allow"
@@ -65,7 +65,7 @@ functions:
     description: Restores Route53 from backup
     timeout: 120
     memorySize: 512
-    iamRoleStatementsName: ${self:service.name}-restore-lambda-role
+    iamRoleStatementsName: ${self:service}-restore-lambda-role
     iamRoleStatementsInherit: false
     iamRoleStatements:
       - Effect: "Allow"
@@ -98,7 +98,6 @@ functions:
       include:
         - route53_utils.py
         - restore_route53.py
-
 plugins:
   - serverless-pseudo-parameters
   - serverless-iam-roles-per-function
