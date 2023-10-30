@@ -20,12 +20,10 @@ functions:
     description: Backs up Route53 regularly to a bucket
     timeout: 120
     memorySize: 512
-    environment:
-      RETENTION_PERIOD: ${opt:retention-period, "14"}
     events:
       - schedule:
           name: route53-scheduled-backup-trigger
-          rate: rate(${opt:backup-interval, "120"} minutes)
+          rate: rate(${self:custom.backup_interval} minutes)
           enabled: true
           input: {}
     iamRoleStatementsName: ${self:service}-backup-lambda-role
@@ -98,7 +96,8 @@ functions:
       include:
         - route53_utils.py
         - restore_route53.py
-
+custom:
+    backup_interval: ${opt:backup_interval, 1440}
 plugins:
   - serverless-pseudo-parameters
   - serverless-iam-roles-per-function

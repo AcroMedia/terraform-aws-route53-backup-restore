@@ -10,7 +10,7 @@ variable "region" {
   default     = "us-east-1"
 }
 
-variable "interval" {
+variable "backup_interval" {
   description = "The interval, in minutes, of the scheduled backup."
   type        = string
   default     = "120"
